@@ -134,6 +134,13 @@ def filter_enclosing(from_col, to_col, from_line, to_line, spans):
              span[1].get("spanToColumn") >= to_col))
         )]
 
+def shorten_module_prefix(prefixed_type):
+    words = prefixed_type.split('.')
+    if (len(words) > 1):
+        return ("_" + words[-1])
+    else:
+        return prefixed_type
+
 def type_info_for_sel(view,types):
     """
     Takes the type spans returned from a get_exp_types request and returns a
@@ -847,10 +854,11 @@ class Win:
             # Display the first type in a region and in the status bar
             view = self.window.active_view()
             (type_string,type_span) = type_info_for_sel(view,types)
+            final_text = " ".join(map(shorten_module_prefix, type_string.split(' ')))
             span = Span.from_json(type_span, self.window)
             if span:
                 if Settings.show_popup():
-                    view.show_popup(type_string)
+                    view.show_popup(final_text)
                 view.set_status("type_at_cursor", type_string)
                 view.add_regions("type_at_cursor", [span.in_view.region], "storage.type", "", sublime.DRAW_OUTLINED)
         else:
